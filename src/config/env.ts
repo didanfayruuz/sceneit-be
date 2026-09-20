@@ -12,4 +12,7 @@ export const env = {
   databaseUrl: required("DATABASE_URL"),
   jwtSecret: required("JWT_SECRET"),
   jwtExpiresIn: process.env.JWT_EXPIRES_IN ?? "7d",
+  tmdbApiKey: required("TMDB_API_KEY"),
+  tmdbBaseUrl: process.env.TMDB_BASE_URL ?? "https://api.themoviedb.org/3",
+  tmdbImageBaseUrl: process.env.TMDB_IMAGE_BASE_URL ?? "https://image.tmdb.org/t/p/w500"
 };
