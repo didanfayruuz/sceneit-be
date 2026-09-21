@@ -42,3 +42,10 @@ export async function loginUser(input: LoginInput) {
 
   return user;
 }
+
+export async function getUserById(userId: number) {
+  return db.query.users.findFirst({
+    where: eq(users.id, userId),
+    columns: { id: true, name: true, email: true, avatarUrl: true, bio: true, role: true, createdAt: true },
+  });
+}

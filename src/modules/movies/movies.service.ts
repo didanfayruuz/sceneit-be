@@ -47,8 +47,8 @@ export async function getContentDetail(tmdbId: number, type: ContentType = "movi
         : undefined,
   };
 
-  await cacheMovie(detail);
-  return detail;
+	const localId = await cacheMovie(detail);
+  return { id: localId, ...detail };
 }
 
 async function cacheMovie(detail: {

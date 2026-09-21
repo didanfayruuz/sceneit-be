@@ -4,6 +4,7 @@ import cookieParser from "cookie-parser";
 import { env } from "./config/env";
 import { authRouter } from "./modules/auth/auth.routes";
 import { moviesRouter } from "./modules/movies/movies.routes";
+import { movieReviewsRouter, reviewsRouter } from "./modules/reviews/reviews.routes";
 
 const app = express();
 
@@ -13,6 +14,8 @@ app.use(cookieParser());
 
 app.use("/api/auth", authRouter);
 app.use("/api/movies", moviesRouter);
+app.use("/api/movies/:movieId/reviews", movieReviewsRouter);
+app.use("/api/reviews", reviewsRouter);
 
 app.get("/", (_req, res) => {
   res.json({ status: "SceneIt API is running" });

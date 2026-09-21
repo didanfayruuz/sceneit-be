@@ -1,5 +1,7 @@
 import { pgTable, serial, varchar, text, timestamp, pgEnum } from "drizzle-orm/pg-core";
 import { integer, unique } from "drizzle-orm/pg-core";
+import { boolean } from "drizzle-orm/pg-core";
+import { relations } from "drizzle-orm";
 
 export const roleEnum = pgEnum("role", ["user", "admin"]);
 
@@ -38,3 +40,28 @@ export const movies = pgTable(
 
 export type Movie = typeof movies.$inferSelect;
 export type NewMovie = typeof movies.$inferInsert;
+
+export const reviews = pgTable(
+  "reviews",
+  {
+    id: serial("id").primaryKey(),
+    userId: integer("user_id").notNull().references(() => users.id),
+    movieId: integer("movie_id").notNull().references(() => movies.id),
+    rating: integer("rating").notNull(), // skala 1-5 (lihat catatan di bawah)
+    content: text("content").notNull(),
+    containsSpoiler: boolean("contains_spoiler").notNull().default(false),
+    createdAt: timestamp("created_at").notNull().defaultNow(),
+    updatedAt: timestamp("updated_at").notNull().defaultNow(),
+  },
+  (table) => ({
+    oneReviewPerUserPerMovie: unique().on(table.userId, table.movieId),
+  })
+);
+
+export const reviewsRelations = relations(reviews, ({ one }) => ({
+  user: one(users, { fields: [reviews.userId], references: [users.id] }),
+  movie: one(movies, { fields: [reviews.movieId], references: [movies.id] }),
+}));
+
+export type Review = typeof reviews.$inferSelect;
+export type NewReview = typeof reviews.$inferInsert;
