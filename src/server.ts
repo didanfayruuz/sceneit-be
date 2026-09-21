@@ -7,6 +7,7 @@ import { moviesRouter } from "./modules/movies/movies.routes";
 import { movieReviewsRouter, reviewsRouter } from "./modules/reviews/reviews.routes";
 import { watchlistRouter } from "./modules/watchlist/watchlist.routes";
 import { watchedRouter } from "./modules/watched/watched.routes";
+import { favoritesRouter } from "./modules/favorites/favorites.routes";
 import { socialRouter } from "./modules/social/social.routes";
 
 const app = express();
@@ -21,6 +22,7 @@ app.use("/api/movies/:movieId/reviews", movieReviewsRouter);
 app.use("/api/reviews", reviewsRouter);
 app.use("/api/watchlist", watchlistRouter);
 app.use("/api/watched", watchedRouter);
+app.use("/api/favorites", favoritesRouter);
 app.use("/api/users", socialRouter);
 
 app.get("/", (_req, res) => {

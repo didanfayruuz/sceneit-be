@@ -157,3 +157,24 @@ export const followsRelations = relations(follows, ({ one }) => ({
 
 export type Follow = typeof follows.$inferSelect;
 export type NewFollow = typeof follows.$inferInsert;
+
+export const favorites = pgTable(
+  "favorites",
+  {
+    id: serial("id").primaryKey(),
+    userId: integer("user_id").notNull().references(() => users.id),
+    movieId: integer("movie_id").notNull().references(() => movies.id),
+    addedAt: timestamp("added_at").notNull().defaultNow(),
+  },
+  (table) => ({
+    oneEntryPerUserPerMovie: unique().on(table.userId, table.movieId),
+  })
+);
+
+export const favoritesRelations = relations(favorites, ({ one }) => ({
+  user: one(users, { fields: [favorites.userId], references: [users.id] }),
+  movie: one(movies, { fields: [favorites.movieId], references: [movies.id] }),
+}));
+
+export type Favorite = typeof favorites.$inferSelect;
+export type NewFavorite = typeof favorites.$inferInsert;
