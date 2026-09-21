@@ -65,3 +65,24 @@ export const reviewsRelations = relations(reviews, ({ one }) => ({
 
 export type Review = typeof reviews.$inferSelect;
 export type NewReview = typeof reviews.$inferInsert;
+
+export const watchlist = pgTable(
+  "watchlist",
+  {
+    id: serial("id").primaryKey(),
+    userId: integer("user_id").notNull().references(() => users.id),
+    movieId: integer("movie_id").notNull().references(() => movies.id),
+    addedAt: timestamp("added_at").notNull().defaultNow(),
+  },
+  (table) => ({
+    oneEntryPerUserPerMovie: unique().on(table.userId, table.movieId),
+  })
+);
+
+export const watchlistRelations = relations(watchlist, ({ one }) => ({
+  user: one(users, { fields: [watchlist.userId], references: [users.id] }),
+  movie: one(movies, { fields: [watchlist.movieId], references: [movies.id] }),
+}));
+
+export type Watchlist = typeof watchlist.$inferSelect;
+export type NewWatchlist = typeof watchlist.$inferInsert;
