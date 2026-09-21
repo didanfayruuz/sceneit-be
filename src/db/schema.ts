@@ -86,3 +86,74 @@ export const watchlistRelations = relations(watchlist, ({ one }) => ({
 
 export type Watchlist = typeof watchlist.$inferSelect;
 export type NewWatchlist = typeof watchlist.$inferInsert;
+
+export const watched = pgTable(
+  "watched",
+  {
+    id: serial("id").primaryKey(),
+    userId: integer("user_id").notNull().references(() => users.id),
+    movieId: integer("movie_id").notNull().references(() => movies.id),
+    watchedAt: timestamp("watched_at").notNull().defaultNow(),
+  },
+  (table) => ({
+    oneEntryPerUserPerMovie: unique().on(table.userId, table.movieId),
+  })
+);
+
+export const watchedRelations = relations(watched, ({ one }) => ({
+  user: one(users, { fields: [watched.userId], references: [users.id] }),
+  movie: one(movies, { fields: [watched.movieId], references: [movies.id] }),
+}));
+
+export type Watched = typeof watched.$inferSelect;
+export type NewWatched = typeof watched.$inferInsert;
+
+export const likes = pgTable(
+  "likes",
+  {
+    id: serial("id").primaryKey(),
+    userId: integer("user_id").notNull().references(() => users.id),
+    reviewId: integer("review_id").notNull().references(() => reviews.id),
+    createdAt: timestamp("created_at").notNull().defaultNow(),
+  },
+  (table) => ({
+    oneLikePerUserPerReview: unique().on(table.userId, table.reviewId),
+  })
+);
+
+export const likesRelations = relations(likes, ({ one }) => ({
+  user: one(users, { fields: [likes.userId], references: [users.id] }),
+  review: one(reviews, { fields: [likes.reviewId], references: [reviews.id] }),
+}));
+
+export type Like = typeof likes.$inferSelect;
+export type NewLike = typeof likes.$inferInsert;
+
+export const follows = pgTable(
+  "follows",
+  {
+    id: serial("id").primaryKey(),
+    followerId: integer("follower_id").notNull().references(() => users.id),
+    followingId: integer("following_id").notNull().references(() => users.id),
+    createdAt: timestamp("created_at").notNull().defaultNow(),
+  },
+  (table) => ({
+    oneFollowPerPair: unique().on(table.followerId, table.followingId),
+  })
+);
+
+export const followsRelations = relations(follows, ({ one }) => ({
+  follower: one(users, {
+    fields: [follows.followerId],
+    references: [users.id],
+    relationName: "follower",
+  }),
+  following: one(users, {
+    fields: [follows.followingId],
+    references: [users.id],
+    relationName: "following",
+  }),
+}));
+
+export type Follow = typeof follows.$inferSelect;
+export type NewFollow = typeof follows.$inferInsert;

@@ -1,6 +1,7 @@
 import { eq, and, desc } from "drizzle-orm";
 import { db } from "../../db";
 import { reviews } from "../../db/schema";
+import { getLikeCounts } from "../likes/likes.service";
 import type { CreateReviewInput, UpdateReviewInput } from "./reviews.validation";
 
 export async function createReview(userId: number, movieId: number, input: CreateReviewInput) {
@@ -24,13 +25,16 @@ export async function createReview(userId: number, movieId: number, input: Creat
 }
 
 export async function getReviewsByMovie(movieId: number) {
-  return db.query.reviews.findMany({
+  const rows = await db.query.reviews.findMany({
     where: eq(reviews.movieId, movieId),
-    orderBy: desc(reviews.createdAt),
+   	orderBy: desc(reviews.createdAt),
     with: {
       user: { columns: { id: true, name: true, avatarUrl: true } },
     },
   });
+
+	const counts = await getLikeCounts(rows.map((r) => r.id));
+  return rows.map((r) => ({ ...r, likeCount: counts.get(r.id) ?? 0 }));
 }
 
 export async function updateReview(reviewId: number, userId: number, input: UpdateReviewInput) {
