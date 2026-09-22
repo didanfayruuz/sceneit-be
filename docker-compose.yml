@@ -1,0 +1,34 @@
+services:
+  db:
+    image: postgres:16-alpine
+    container_name: sceneit-db
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: db_sceneit
+    ports:
+      - "5433:5432"
+    volumes:
+      - sceneit_pgdata:/var/lib/postgresql/data
+
+  api:
+    build: .
+    container_name: sceneit-api
+    restart: unless-stopped
+    depends_on:
+      - db
+    ports:
+      - "4000:4000"
+    environment:
+      PORT: 4000
+      NODE_ENV: production
+      DATABASE_URL: postgresql://postgres:postgres@db:5432/db_sceneit
+      JWT_SECRET: ${JWT_SECRET}
+      JWT_EXPIRES_IN: 7d
+      TMDB_API_KEY: ${TMDB_API_KEY}
+      TMDB_BASE_URL: https://api.themoviedb.org/3
+      TMDB_IMAGE_BASE_URL: https://image.tmdb.org/t/p/w500
+
+volumes:
+  sceneit_pgdata:

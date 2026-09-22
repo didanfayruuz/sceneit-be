@@ -1,22 +1,18 @@
 import type { Request, Response, NextFunction } from "express";
-import { verifyToken, type JwtPayload } from "../utils/jwt";
+import { verifyToken } from "../utils/jwt";
 
-// Extend Request agar bisa membawa user payload
-export interface AuthRequest extends Request {
-  user?: JwtPayload;
+declare global {
+  namespace Express {
+    interface Request {
+      user?: { userId: number; role: "user" | "admin" };
+    }
+  }
 }
 
-export function requireAuth(req: AuthRequest, res: Response, next: NextFunction): void {
-  // Baca token dari cookie (browser) ATAU Authorization Bearer header (Postman/API client)
-  const cookieToken = req.cookies?.token as string | undefined;
-  const authHeader = req.headers.authorization;
-  const bearerToken = authHeader?.startsWith("Bearer ") ? authHeader.slice(7) : undefined;
-
-  const token = cookieToken ?? bearerToken;
-
+export function requireAuth(req: Request, res: Response, next: NextFunction) {
+  const token = req.cookies?.token;
   if (!token) {
-    res.status(401).json({ message: "Unauthorized: token tidak ditemukan" });
-    return;
+    return res.status(401).json({ message: "Unauthorized" });
   }
 
   try {
@@ -24,6 +20,6 @@ export function requireAuth(req: AuthRequest, res: Response, next: NextFunction)
     req.user = payload;
     next();
   } catch {
-    res.status(401).json({ message: "Unauthorized: token tidak valid atau kedaluwarsa" });
+    return res.status(401).json({ message: "Invalid or expired token" });
   }
 }

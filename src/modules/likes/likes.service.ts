@@ -1,14 +1,9 @@
-import { eq, and, inArray, count } from "drizzle-orm";
+import { eq, and, inArray, sql } from "drizzle-orm";
 import { db } from "../../db";
 import { likes, reviews } from "../../db/schema";
 import { createNotification } from "../notifications/notifications.service";
 
 export async function likeReview(userId: number, reviewId: number) {
-  const review = await db.query.reviews.findFirst({
-    where: eq(reviews.id, reviewId),
-  });
-  if (!review) throw new Error("NOT_FOUND");
-
   const existing = await db.query.likes.findFirst({
     where: and(eq(likes.userId, userId), eq(likes.reviewId, reviewId)),
   });
@@ -16,12 +11,15 @@ export async function likeReview(userId: number, reviewId: number) {
 
   const [entry] = await db.insert(likes).values({ userId, reviewId }).returning();
 
-  await createNotification({
-    userId: review.userId,
-    type: "like",
-    sourceUserId: userId,
-    reviewId,
-  });
+  const review = await db.query.reviews.findFirst({ where: eq(reviews.id, reviewId) });
+  if (review) {
+    await createNotification({
+      userId: review.userId,
+      type: "like",
+      sourceUserId: userId,
+      reviewId,
+    });
+  }
 
   return entry;
 }
@@ -35,22 +33,15 @@ export async function unlikeReview(userId: number, reviewId: number) {
   await db.delete(likes).where(and(eq(likes.userId, userId), eq(likes.reviewId, reviewId)));
 }
 
-export async function getLikeCounts(reviewIds: number[]): Promise<Map<number, number>> {
-  const map = new Map<number, number>();
-  if (reviewIds.length === 0) return map;
+// Dipakai reviews.service.ts buat nampilin jumlah like per review
+export async function getLikeCounts(reviewIds: number[]) {
+  if (reviewIds.length === 0) return new Map<number, number>();
 
   const rows = await db
-    .select({
-      reviewId: likes.reviewId,
-      total: count(likes.id),
-    })
+    .select({ reviewId: likes.reviewId, count: sql<number>`count(*)`.as("count") })
     .from(likes)
     .where(inArray(likes.reviewId, reviewIds))
     .groupBy(likes.reviewId);
 
-  for (const row of rows) {
-    map.set(row.reviewId, Number(row.total));
-  }
-
-  return map;
+  return new Map(rows.map((r) => [r.reviewId, Number(r.count)]));
 }
