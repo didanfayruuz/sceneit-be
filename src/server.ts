@@ -10,6 +10,7 @@ import { watchedRouter } from "./modules/watched/watched.routes";
 import { favoritesRouter } from "./modules/favorites/favorites.routes";
 import { socialRouter } from "./modules/social/social.routes";
 import { feedRouter } from "./modules/feed/feed.routes";
+import { notificationsRouter } from "./modules/notifications/notifications.routes";
 
 const app = express();
 
@@ -26,6 +27,7 @@ app.use("/api/watched", watchedRouter);
 app.use("/api/favorites", favoritesRouter);
 app.use("/api/users", socialRouter);
 app.use("/api/feed", feedRouter);
+app.use("/api/notifications", notificationsRouter);
 
 app.get("/", (_req, res) => {
   res.json({ status: "SceneIt API is running" });

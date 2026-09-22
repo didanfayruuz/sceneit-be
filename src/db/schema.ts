@@ -178,3 +178,33 @@ export const favoritesRelations = relations(favorites, ({ one }) => ({
 
 export type Favorite = typeof favorites.$inferSelect;
 export type NewFavorite = typeof favorites.$inferInsert;
+
+export const notificationTypeEnum = pgEnum("notification_type", ["follow", "like"]);
+
+export const notifications = pgTable("notifications", {
+  id: serial("id").primaryKey(),
+  userId: integer("user_id").notNull().references(() => users.id), // penerima notifikasi
+  type: notificationTypeEnum("type").notNull(),
+  sourceUserId: integer("source_user_id").notNull().references(() => users.id), // pemicu
+  reviewId: integer("review_id").references(() => reviews.id), // nullable, khusus type "like"
+  isRead: boolean("is_read").notNull().default(false),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+});
+
+// Dua FK ke users lagi (userId & sourceUserId) → butuh relationName, sama kayak follows
+export const notificationsRelations = relations(notifications, ({ one }) => ({
+  user: one(users, {
+    fields: [notifications.userId],
+    references: [users.id],
+    relationName: "recipient",
+  }),
+  sourceUser: one(users, {
+    fields: [notifications.sourceUserId],
+    references: [users.id],
+    relationName: "source",
+  }),
+  review: one(reviews, { fields: [notifications.reviewId], references: [reviews.id] }),
+}));
+
+export type Notification = typeof notifications.$inferSelect;
+export type NewNotification = typeof notifications.$inferInsert;

@@ -1,14 +1,28 @@
 import { eq, and, inArray, count } from "drizzle-orm";
 import { db } from "../../db";
-import { likes } from "../../db/schema";
+import { likes, reviews } from "../../db/schema";
+import { createNotification } from "../notifications/notifications.service";
 
 export async function likeReview(userId: number, reviewId: number) {
+  const review = await db.query.reviews.findFirst({
+    where: eq(reviews.id, reviewId),
+  });
+  if (!review) throw new Error("NOT_FOUND");
+
   const existing = await db.query.likes.findFirst({
     where: and(eq(likes.userId, userId), eq(likes.reviewId, reviewId)),
   });
   if (existing) throw new Error("ALREADY_LIKED");
 
   const [entry] = await db.insert(likes).values({ userId, reviewId }).returning();
+
+  await createNotification({
+    userId: review.userId,
+    type: "like",
+    sourceUserId: userId,
+    reviewId,
+  });
+
   return entry;
 }
 

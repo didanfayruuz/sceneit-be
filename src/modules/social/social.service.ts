@@ -1,6 +1,7 @@
 import { eq, and } from "drizzle-orm";
 import { db } from "../../db";
 import { follows } from "../../db/schema";
+import { createNotification } from "../notifications/notifications.service";
 
 export async function followUser(followerId: number, followingId: number) {
   if (followerId === followingId) throw new Error("CANNOT_FOLLOW_SELF");
@@ -11,6 +12,13 @@ export async function followUser(followerId: number, followingId: number) {
   if (existing) throw new Error("ALREADY_FOLLOWING");
 
   const [entry] = await db.insert(follows).values({ followerId, followingId }).returning();
+
+  await createNotification({
+    userId: followingId,
+    type: "follow",
+    sourceUserId: followerId,
+  });
+
   return entry;
 }
 

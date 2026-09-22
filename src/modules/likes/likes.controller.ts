@@ -11,6 +11,9 @@ export async function like(req: Request, res: Response) {
     if (err instanceof Error && err.message === "ALREADY_LIKED") {
       return res.status(409).json({ message: "Kamu sudah like review ini" });
     }
+    if (err instanceof Error && err.message === "NOT_FOUND") {
+      return res.status(404).json({ message: "Review tidak ditemukan" });
+    }
     console.error(err);
     return res.status(500).json({ message: "Terjadi kesalahan server" });
   }
