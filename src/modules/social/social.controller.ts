@@ -1,5 +1,5 @@
 import type { Request, Response } from "express";
-import { followUser, unfollowUser } from "./social.service";
+import { followUser, unfollowUser, getFollowStatus, getFollowers, getFollowing } from "./social.service";
 
 export async function follow(req: Request, res: Response) {
   const followingId = Number(req.params.id);
@@ -40,4 +40,31 @@ export async function unfollow(req: Request, res: Response) {
     console.error(err);
     return res.status(500).json({ message: "Terjadi kesalahan server" });
   }
+}
+
+export async function status(req: Request, res: Response) {
+  const targetId = Number(req.params.id);
+  if (Number.isNaN(targetId)) {
+    return res.status(400).json({ message: "User ID tidak valid" });
+  }
+  const result = await getFollowStatus(req.user!.userId, targetId);
+  return res.json(result);
+}
+
+export async function followers(req: Request, res: Response) {
+  const userId = Number(req.params.id);
+  if (Number.isNaN(userId)) {
+    return res.status(400).json({ message: "User ID tidak valid" });
+  }
+  const data = await getFollowers(userId);
+  return res.json({ followers: data });
+}
+
+export async function following(req: Request, res: Response) {
+  const userId = Number(req.params.id);
+  if (Number.isNaN(userId)) {
+    return res.status(400).json({ message: "User ID tidak valid" });
+  }
+  const data = await getFollowing(userId);
+  return res.json({ following: data });
 }

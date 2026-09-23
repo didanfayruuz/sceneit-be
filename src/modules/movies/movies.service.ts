@@ -24,6 +24,24 @@ export async function searchContent(query: string, type: ContentType = "movie", 
   };
 }
 
+export async function searchMultiContent(query: string, page = 1) {
+  const { data } = await tmdbClient.get("/search/multi", {
+    params: { query, page },
+  });
+  const results = (data.results ?? [])
+    .filter((item: any) => item.media_type === "movie" || item.media_type === "tv")
+    .map((item: any) => ({
+      tmdbId: item.id,
+      type: item.media_type === "tv" ? "series" : "movie",
+      title: item.media_type === "movie" ? item.title : item.name,
+      posterPath: item.poster_path,
+      releaseYear:
+        (item.media_type === "movie" ? item.release_date : item.first_air_date)?.slice(0, 4) || null,
+      rating: item.vote_average,
+    }));
+  return { page: data.page, totalPages: data.total_pages, results };
+}
+
 export async function getContentDetail(tmdbId: number, type: ContentType = "movie") {
   const tmdbType = type === "series" ? "tv" : "movie";
   const { data } = await tmdbClient.get(`/${tmdbType}/${tmdbId}`, {
@@ -431,5 +449,33 @@ export async function exploreContent(
     page: data.page,
     totalPages: data.total_pages,
     results,
+  };
+}
+
+export async function getGenres(type: ContentType = "movie") {
+  const tmdbType = type === "series" ? "tv" : "movie";
+  const { data } = await tmdbClient.get(`/genre/${tmdbType}/list`);
+  return {
+    genres: (data.genres ?? []).map((g: any) => ({ id: g.id, name: g.name })),
+  };
+}
+
+
+export async function getTmdbReviews(tmdbId: number, type: ContentType = "movie", page = 1) {
+  const tmdbType = type === "series" ? "tv" : "movie";
+  const { data } = await tmdbClient.get(`/${tmdbType}/${tmdbId}/reviews`, {
+    params: { page },
+  });
+  return {
+    page: data.page,
+    totalPages: data.total_pages,
+    results: (data.results ?? []).map((item: any) => ({
+      id: item.id,
+      author: item.author_details?.name || item.author,
+      avatarPath: item.author_details?.avatar_path ?? null,
+      rating: item.author_details?.rating ?? null,
+      content: item.content,
+      createdAt: item.created_at,
+    })),
   };
 }

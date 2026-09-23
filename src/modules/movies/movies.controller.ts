@@ -1,6 +1,6 @@
 import type { Request, Response } from "express";
 import { searchContent, getContentDetail, getSimilarContent, getTrendingMovies, getPopularMovies, getTopRatedMovies, getNowPlayingMovies,
-  getTrendingSeries, getPopularSeries, getTopRatedSeries, getAiringTodaySeries, exploreContent } from "./movies.service";
+  getTrendingSeries, getPopularSeries, getTopRatedSeries, getAiringTodaySeries, exploreContent, searchMultiContent, getGenres, getTmdbReviews } from "./movies.service";
 
 export async function search(req: Request, res: Response) {
   const query = String(req.query.query ?? "");
@@ -229,5 +229,47 @@ export async function explore(req: Request, res: Response) {
     return res.status(502).json({
       message: "Gagal melakukan explore content dari TMDB",
     });
+  }
+}
+
+export async function searchMulti(req: Request, res: Response) {
+  const query = String(req.query.query ?? "");
+  const page = Number(req.query.page ?? 1);
+  if (!query) {
+    return res.status(400).json({ message: "Query pencarian wajib diisi" });
+  }
+  try {
+    const result = await searchMultiContent(query, page);
+    return res.json(result);
+  } catch (err) {
+    console.error(err);
+    return res.status(502).json({ message: "Gagal mengambil data dari TMDB" });
+  }
+}
+
+export async function genres(req: Request, res: Response) {
+  const type = req.query.type === "series" ? "series" : "movie";
+  try {
+    const result = await getGenres(type);
+    return res.json(result);
+  } catch (err) {
+    console.error(err);
+    return res.status(502).json({ message: "Gagal mengambil genre dari TMDB" });
+  }
+}
+
+export async function tmdbReviews(req: Request, res: Response) {
+  const tmdbId = Number(req.params.id);
+  const type = req.query.type === "series" ? "series" : "movie";
+  const page = Number(req.query.page ?? 1);
+  if (Number.isNaN(tmdbId)) {
+    return res.status(400).json({ message: "ID tidak valid" });
+  }
+  try {
+    const result = await getTmdbReviews(tmdbId, type, page);
+    return res.json(result);
+  } catch (err) {
+    console.error(err);
+    return res.status(502).json({ message: "Gagal mengambil review dari TMDB" });
   }
 }

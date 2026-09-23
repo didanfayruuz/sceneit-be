@@ -1,6 +1,6 @@
 import type { Request, Response } from "express";
 import { createReviewSchema, updateReviewSchema } from "./reviews.validation";
-import { createReview, getReviewsByMovie, updateReview, deleteReview } from "./reviews.service";
+import { createReview, getReviewsByMovie,getReviewsByUser, updateReview, deleteReview, getPopularReviews } from "./reviews.service";
 
 export async function create(req: Request, res: Response) {
   const movieId = Number(req.params.movieId);
@@ -24,6 +24,11 @@ export async function create(req: Request, res: Response) {
 export async function listByMovie(req: Request, res: Response) {
   const movieId = Number(req.params.movieId);
   const data = await getReviewsByMovie(movieId);
+  return res.json({ reviews: data });
+}
+
+export async function listMine(req: Request, res: Response) {
+  const data = await getReviewsByUser(req.user!.userId);
   return res.json({ reviews: data });
 }
 
@@ -65,4 +70,10 @@ export async function remove(req: Request, res: Response) {
     console.error(err);
     return res.status(500).json({ message: "Terjadi kesalahan server" });
   }
+}
+
+export async function listPopular(req: Request, res: Response) {
+  const limit = Number(req.query.limit ?? 10);
+  const data = await getPopularReviews(limit);
+  return res.json({ reviews: data });
 }

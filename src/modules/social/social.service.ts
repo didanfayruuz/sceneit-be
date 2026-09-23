@@ -32,3 +32,28 @@ export async function unfollowUser(followerId: number, followingId: number) {
     .delete(follows)
     .where(and(eq(follows.followerId, followerId), eq(follows.followingId, followingId)));
 }
+
+export async function getFollowStatus(followerId: number, followingId: number) {
+  const existing = await db.query.follows.findFirst({
+    where: and(eq(follows.followerId, followerId), eq(follows.followingId, followingId)),
+  });
+  return { isFollowing: Boolean(existing) };
+}
+
+export async function getFollowers(userId: number) {
+  return db.query.follows.findMany({
+    where: eq(follows.followingId, userId),
+    with: {
+      follower: { columns: { id: true, name: true, avatarUrl: true } },
+    },
+  });
+}
+
+export async function getFollowing(userId: number) {
+  return db.query.follows.findMany({
+    where: eq(follows.followerId, userId),
+    with: {
+      following: { columns: { id: true, name: true, avatarUrl: true } },
+    },
+  });
+}

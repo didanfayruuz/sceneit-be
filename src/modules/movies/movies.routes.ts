@@ -1,6 +1,6 @@
 import { Router } from "express";
 import { search, detail, similar, trending, popular, topRated, nowPlaying,
-trendingSeries, popularSeries, topRatedSeries, airingTodaySeries, explore} from "./movies.controller";
+trendingSeries, popularSeries, topRatedSeries, airingTodaySeries, explore, searchMulti, genres, tmdbReviews} from "./movies.controller";
 
 export const moviesRouter = Router();
 
@@ -17,5 +17,9 @@ moviesRouter.get("/top-rated-series", topRatedSeries); // GET /api/movies/top-ra
 moviesRouter.get("/airing-today-series", airingTodaySeries); // GET /api/movies/airing-today-series?page=1
 
 moviesRouter.get("/explore", explore); // GET /api/movies/explore?query=&type=&genre=&year=&rating=&page=1
+moviesRouter.get("/search-multi", searchMulti); // GET /api/movies/search-multi?query=
+moviesRouter.get("/genres", genres); // GET /api/movies/genres?type=movie|series
+
 moviesRouter.get("/:id/similar", similar); // GET /api/movies/:id/similar?type=movie|series
+moviesRouter.get("/:id/tmdb-reviews", tmdbReviews); // GET /api/movies/:id/tmdb-reviews?type=movie|series
 moviesRouter.get("/:id", detail);     // GET /api/movies/:id?type=movie|series

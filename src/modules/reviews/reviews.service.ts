@@ -27,13 +27,23 @@ export async function createReview(userId: number, movieId: number, input: Creat
 export async function getReviewsByMovie(movieId: number) {
   const rows = await db.query.reviews.findMany({
     where: eq(reviews.movieId, movieId),
-   	orderBy: desc(reviews.createdAt),
+    orderBy: desc(reviews.createdAt),
     with: {
       user: { columns: { id: true, name: true, avatarUrl: true } },
     },
   });
+  const counts = await getLikeCounts(rows.map((r) => r.id));
+  return rows.map((r) => ({ ...r, likeCount: counts.get(r.id) ?? 0 }));
+}
 
-	const counts = await getLikeCounts(rows.map((r) => r.id));
+  export async function getReviewsByUser(userId: number) {
+  const rows = await db.query.reviews.findMany({
+    where: eq(reviews.userId, userId),
+    orderBy: desc(reviews.createdAt),
+    with: { movie: true },
+  });
+  
+  const counts = await getLikeCounts(rows.map((r) => r.id));
   return rows.map((r) => ({ ...r, likeCount: counts.get(r.id) ?? 0 }));
 }
 
@@ -57,4 +67,20 @@ export async function deleteReview(reviewId: number, userId: number) {
   if (existing.userId !== userId) throw new Error("FORBIDDEN");
 
   await db.delete(reviews).where(eq(reviews.id, reviewId));
+}
+
+export async function getPopularReviews(limit = 10) {
+  const rows = await db.query.reviews.findMany({
+    orderBy: desc(reviews.createdAt),
+    limit: 100,
+    with: {
+      user: { columns: { id: true, name: true, avatarUrl: true } },
+      movie: { columns: { id: true, title: true, posterPath: true, type: true } },
+    },
+  });
+  const counts = await getLikeCounts(rows.map((r) => r.id));
+  const withLikes = rows.map((r) => ({ ...r, likeCount: counts.get(r.id) ?? 0 }));
+  return withLikes
+    .sort((a, b) => b.likeCount - a.likeCount)
+    .slice(0, limit);
 }
