@@ -8,5 +8,10 @@ export const createReviewSchema = z.object({
 
 export const updateReviewSchema = createReviewSchema.partial();
 
+export const reportReviewSchema = z.object({
+  reason: z.string().min(3).max(500),
+});
+
 export type CreateReviewInput = z.infer<typeof createReviewSchema>;
 export type UpdateReviewInput = z.infer<typeof updateReviewSchema>;
+export type ReportReviewInput = z.infer<typeof reportReviewSchema>;

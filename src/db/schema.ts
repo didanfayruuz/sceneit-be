@@ -13,6 +13,7 @@ export const users = pgTable("users", {
   avatarUrl: text("avatar_url"),
   bio: text("bio"),
   role: roleEnum("role").notNull().default("user"),
+  isActive: boolean("is_active").notNull().default(true),
   createdAt: timestamp("created_at").notNull().defaultNow(),
 });
 
@@ -113,7 +114,7 @@ export const likes = pgTable(
   {
     id: serial("id").primaryKey(),
     userId: integer("user_id").notNull().references(() => users.id),
-    reviewId: integer("review_id").notNull().references(() => reviews.id),
+    reviewId: integer("review_id").notNull().references(() => reviews.id, { onDelete: "cascade" }),
     createdAt: timestamp("created_at").notNull().defaultNow(),
   },
   (table) => ({
@@ -186,7 +187,7 @@ export const notifications = pgTable("notifications", {
   userId: integer("user_id").notNull().references(() => users.id), // penerima notifikasi
   type: notificationTypeEnum("type").notNull(),
   sourceUserId: integer("source_user_id").notNull().references(() => users.id), // pemicu
-  reviewId: integer("review_id").references(() => reviews.id), // nullable, khusus type "like"
+  reviewId: integer("review_id").references(() => reviews.id, { onDelete: "cascade" }), // nullable, khusus type "like"
   isRead: boolean("is_read").notNull().default(false),
   createdAt: timestamp("created_at").notNull().defaultNow(),
 });
@@ -208,3 +209,39 @@ export const notificationsRelations = relations(notifications, ({ one }) => ({
 
 export type Notification = typeof notifications.$inferSelect;
 export type NewNotification = typeof notifications.$inferInsert;
+
+export const reportStatusEnum = pgEnum("report_status", ["pending", "reviewed", "removed"]);
+
+export const reportedReviews = pgTable("reported_reviews", {
+  id: serial("id").primaryKey(),
+  reviewId: integer("review_id").notNull().references(() => reviews.id, { onDelete: "cascade" }),
+  reportedBy: integer("reported_by").notNull().references(() => users.id),
+  reason: text("reason").notNull(),
+  status: reportStatusEnum("status").notNull().default("pending"),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+});
+
+export const reportedReviewsRelations = relations(reportedReviews, ({ one }) => ({
+  review: one(reviews, { fields: [reportedReviews.reviewId], references: [reviews.id] }),
+  reporter: one(users, { fields: [reportedReviews.reportedBy], references: [users.id] }),
+}));
+
+export type ReportedReview = typeof reportedReviews.$inferSelect;
+export type NewReportedReview = typeof reportedReviews.$inferInsert;
+
+export const featuredContent = pgTable("featured_content", {
+  id: serial("id").primaryKey(),
+  movieId: integer("movie_id").notNull().references(() => movies.id),
+  featuredReviewId: integer("featured_review_id").references(() => reviews.id),
+  setByAdminId: integer("set_by_admin_id").notNull().references(() => users.id),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+});
+
+export const featuredContentRelations = relations(featuredContent, ({ one }) => ({
+  movie: one(movies, { fields: [featuredContent.movieId], references: [movies.id] }),
+  featuredReview: one(reviews, { fields: [featuredContent.featuredReviewId], references: [reviews.id] }),
+  setByAdmin: one(users, { fields: [featuredContent.setByAdminId], references: [users.id] }),
+}));
+
+export type FeaturedContent = typeof featuredContent.$inferSelect;
+export type NewFeaturedContent = typeof featuredContent.$inferInsert;

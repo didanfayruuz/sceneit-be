@@ -1,6 +1,6 @@
 import { eq, and, desc } from "drizzle-orm";
 import { db } from "../../db";
-import { reviews } from "../../db/schema";
+import { reviews, reportedReviews } from "../../db/schema";
 import { getLikeCounts } from "../likes/likes.service";
 import type { CreateReviewInput, UpdateReviewInput } from "./reviews.validation";
 
@@ -83,4 +83,12 @@ export async function getPopularReviews(limit = 10) {
   return withLikes
     .sort((a, b) => b.likeCount - a.likeCount)
     .slice(0, limit);
+}
+
+export async function reportReview(reviewId: number, reportedBy: number, reason: string) {
+  const review = await db.query.reviews.findFirst({ where: eq(reviews.id, reviewId) });
+  if (!review) throw new Error("NOT_FOUND");
+
+  const [entry] = await db.insert(reportedReviews).values({ reviewId, reportedBy, reason }).returning();
+  return entry;
 }

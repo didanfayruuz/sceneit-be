@@ -11,6 +11,8 @@ import { favoritesRouter } from "./modules/favorites/favorites.routes";
 import { socialRouter } from "./modules/social/social.routes";
 import { feedRouter } from "./modules/feed/feed.routes";
 import { notificationsRouter } from "./modules/notifications/notifications.routes";
+import { adminRouter } from "./modules/admin/admin.routes";
+import { featuredPublicRouter } from "./modules/featured/featured-public.routes";
 
 const app = express();
 
@@ -28,6 +30,8 @@ app.use("/api/favorites", favoritesRouter);
 app.use("/api/users", socialRouter);
 app.use("/api/feed", feedRouter);
 app.use("/api/notifications", notificationsRouter);
+app.use("/api/admin", adminRouter);
+app.use("/api/featured", featuredPublicRouter);
 
 app.get("/", (_req, res) => {
   res.json({ status: "SceneIt API is running" });

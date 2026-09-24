@@ -34,6 +34,10 @@ export async function loginUser(input: LoginInput) {
     throw new Error("INVALID_CREDENTIALS");
   }
 
+  if (!user.isActive) {
+    throw new Error("ACCOUNT_DEACTIVATED");
+  }
+
   const isValid = await comparePassword(input.password, user.passwordHash);
   if (!isValid) {
     throw new Error("INVALID_CREDENTIALS");

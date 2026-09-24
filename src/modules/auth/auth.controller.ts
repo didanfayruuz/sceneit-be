@@ -50,6 +50,9 @@ export async function login(req: Request, res: Response) {
     if (err instanceof Error && err.message === "INVALID_CREDENTIALS") {
       return res.status(401).json({ message: "Email atau password salah" });
     }
+        if (err instanceof Error && err.message === "ACCOUNT_DEACTIVATED") {
+      return res.status(403).json({ message: "Akun kamu telah dinonaktifkan" });
+    }
     console.error(err);
     return res.status(500).json({ message: "Terjadi kesalahan server" });
   }

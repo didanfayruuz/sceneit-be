@@ -1,6 +1,6 @@
 import type { Request, Response } from "express";
-import { createReviewSchema, updateReviewSchema } from "./reviews.validation";
-import { createReview, getReviewsByMovie,getReviewsByUser, updateReview, deleteReview, getPopularReviews } from "./reviews.service";
+import { createReviewSchema, updateReviewSchema, reportReviewSchema } from "./reviews.validation";
+import { createReview, getReviewsByMovie,getReviewsByUser, updateReview, deleteReview, getPopularReviews, reportReview } from "./reviews.service";
 
 export async function create(req: Request, res: Response) {
   const movieId = Number(req.params.movieId);
@@ -76,4 +76,23 @@ export async function listPopular(req: Request, res: Response) {
   const limit = Number(req.query.limit ?? 10);
   const data = await getPopularReviews(limit);
   return res.json({ reviews: data });
+}
+
+export async function report(req: Request, res: Response) {
+  const reviewId = Number(req.params.id);
+  const parsed = reportReviewSchema.safeParse(req.body);
+  if (!parsed.success) {
+    return res.status(400).json({ message: "Validation error", errors: parsed.error.flatten() });
+  }
+
+  try {
+    const entry = await reportReview(reviewId, req.user!.userId, parsed.data.reason);
+    return res.status(201).json({ report: entry });
+  } catch (err) {
+    if (err instanceof Error && err.message === "NOT_FOUND") {
+      return res.status(404).json({ message: "Review tidak ditemukan" });
+    }
+    console.error(err);
+    return res.status(500).json({ message: "Terjadi kesalahan server" });
+  }
 }
