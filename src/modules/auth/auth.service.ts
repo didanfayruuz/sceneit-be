@@ -70,3 +70,11 @@ export async function updateUserProfile(userId: number, input: UpdateProfileInpu
   if (!updated) throw new Error("NOT_FOUND");
   return updated;
 }
+
+export async function getPublicUserById(userId: number) {
+  return db.query.users.findFirst({
+    where: eq(users.id, userId),
+    columns: { id: true, name: true, avatarUrl: true, bio: true, createdAt: true },
+  });
+}
+

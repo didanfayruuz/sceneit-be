@@ -1,5 +1,6 @@
 import type { Request, Response } from "express";
 import { followUser, unfollowUser, getFollowStatus, getFollowers, getFollowing, searchUsers} from "./social.service";
+import { getPublicUserById } from "../auth/auth.service";
 
 export async function follow(req: Request, res: Response) {
   const followingId = Number(req.params.id);
@@ -82,6 +83,30 @@ export async function search(req: Request, res: Response) {
     return res.json({ users: data });
   } catch (err) {
     console.error(err);
+    return res.status(500).json({
+      message: "Terjadi kesalahan server",
+    });
+  }
+}
+
+export async function profile(req: Request, res: Response) {
+  const userId = Number(req.params.id);
+
+  if (Number.isNaN(userId)) {
+    return res.status(400).json({ message: "ID tidak valid" });
+  }
+
+  try {
+    const user = await getPublicUserById(userId);
+
+    if (!user) {
+      return res.status(404).json({ message: "User tidak ditemukan" });
+    }
+
+    return res.json({ user });
+  } catch (err) {
+    console.error("GET PUBLIC PROFILE ERROR:", err);
+
     return res.status(500).json({
       message: "Terjadi kesalahan server",
     });

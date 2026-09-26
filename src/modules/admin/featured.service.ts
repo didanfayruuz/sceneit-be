@@ -85,7 +85,7 @@ export async function getFeaturedList(limit = 5) {
       try {
         const detail = await getContentDetail(row.movie.tmdbId, row.movie.type);
         return {
-          id: detail.id,
+          id: row.id,
           tmdbId: detail.tmdbId,
           type: row.movie.type === "series" ? "Series" : "Movie",
           title: detail.title,
