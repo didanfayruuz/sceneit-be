@@ -1,5 +1,5 @@
 import type { Request, Response } from "express";
-import { followUser, unfollowUser, getFollowStatus, getFollowers, getFollowing } from "./social.service";
+import { followUser, unfollowUser, getFollowStatus, getFollowers, getFollowing, searchUsers} from "./social.service";
 
 export async function follow(req: Request, res: Response) {
   const followingId = Number(req.params.id);
@@ -67,4 +67,23 @@ export async function following(req: Request, res: Response) {
   }
   const data = await getFollowing(userId);
   return res.json({ following: data });
+}
+
+export async function search(req: Request, res: Response) {
+  const query = String(req.query.query || "").trim();
+
+  if (!query) {
+    return res.json({ users: [] });
+  }
+
+  try {
+    const data = await searchUsers(query, req.user!.userId);
+
+    return res.json({ users: data });
+  } catch (err) {
+    console.error(err);
+    return res.status(500).json({
+      message: "Terjadi kesalahan server",
+    });
+  }
 }

@@ -2,7 +2,7 @@ import { eq } from "drizzle-orm";
 import { db } from "../../db";
 import { users } from "../../db/schema";
 import { hashPassword, comparePassword } from "../../utils/hash";
-import type { RegisterInput, LoginInput } from "./auth.validation";
+import type { RegisterInput, LoginInput, UpdateProfileInput } from "./auth.validation";
 
 export async function registerUser(input: RegisterInput) {
   const existing = await db.query.users.findFirst({
@@ -51,4 +51,22 @@ export async function getUserById(userId: number) {
     where: eq(users.id, userId),
     columns: { id: true, name: true, email: true, avatarUrl: true, bio: true, role: true, createdAt: true },
   });
+}
+
+export async function updateUserProfile(userId: number, input: UpdateProfileInput) {
+  const [updated] = await db
+    .update(users)
+    .set(input)
+    .where(eq(users.id, userId))
+    .returning({
+      id: users.id,
+      name: users.name,
+      email: users.email,
+      avatarUrl: users.avatarUrl,
+      bio: users.bio,
+      role: users.role,
+      createdAt: users.createdAt,
+    });
+  if (!updated) throw new Error("NOT_FOUND");
+  return updated;
 }

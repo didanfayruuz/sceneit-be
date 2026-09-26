@@ -18,7 +18,7 @@ export async function getActivityFeed(userId: number, limit = 20) {
       limit,
       with: {
         user: { columns: { id: true, name: true, avatarUrl: true } },
-        movie: { columns: { id: true, title: true, posterPath: true, type: true } },
+        movie: { columns: { id: true, tmdbId: true, title: true, posterPath: true, type: true } },
       },
     }),
     db.query.watchlist.findMany({
@@ -27,7 +27,7 @@ export async function getActivityFeed(userId: number, limit = 20) {
       limit,
       with: {
         user: { columns: { id: true, name: true, avatarUrl: true } },
-        movie: { columns: { id: true, title: true, posterPath: true, type: true } },
+        movie: { columns: { id: true, tmdbId: true, title: true, posterPath: true, type: true } },
       },
     }),
     db.query.watched.findMany({
@@ -36,7 +36,7 @@ export async function getActivityFeed(userId: number, limit = 20) {
       limit,
       with: {
         user: { columns: { id: true, name: true, avatarUrl: true } },
-        movie: { columns: { id: true, title: true, posterPath: true, type: true } },
+        movie: { columns: { id: true, tmdbId: true, title: true, posterPath: true, type: true } },
       },
     }),
   ]);

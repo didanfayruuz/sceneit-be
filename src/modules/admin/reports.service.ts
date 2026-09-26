@@ -18,16 +18,16 @@ export async function updateReportStatus(reportId: number, status: "reviewed" | 
 	});
 	if (!existing) throw new Error("NOT_FOUND");
 
-	// kalau admin memutuskan "removed", review aslinya ikut dihapus dari platform
+  const [updated] = await db
+  .update(reportedReviews)
+  .set({ status })
+  .where(eq(reportedReviews.id, reportId))
+  .returning();
+
+	// Setelah status tersimpan, baru hapus review aslinya dari platform.
   if (status === "removed") {
     await db.delete(reviews).where(eq(reviews.id, existing.reviewId));
   }
-
-  const [updated] = await db
-    .update(reportedReviews)
-    .set({ status })
-    .where(eq(reportedReviews.id, reportId))
-    .returning();
 
   return updated;
 }

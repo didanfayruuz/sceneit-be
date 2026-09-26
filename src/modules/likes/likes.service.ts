@@ -12,7 +12,7 @@ export async function likeReview(userId: number, reviewId: number) {
   const [entry] = await db.insert(likes).values({ userId, reviewId }).returning();
 
   const review = await db.query.reviews.findFirst({ where: eq(reviews.id, reviewId) });
-  if (review) {
+  if (review && review.userId !== userId) {
     await createNotification({
       userId: review.userId,
       type: "like",
