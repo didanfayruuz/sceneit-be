@@ -7,8 +7,8 @@ import { env } from "../../config/env";
 const COOKIE_OPTIONS = {
   httpOnly: true,
   secure: env.nodeEnv === "production",
-  sameSite: "lax" as const,
-  maxAge: 7 * 24 * 60 * 60 * 1000, // 7 hari
+  sameSite: env.nodeEnv === "production" ? ("none" as const) : ("lax" as const),
+  maxAge: 7 * 24 * 60 * 60 * 1000,
 };
 
 export async function register(req: Request, res: Response) {
