@@ -1,6 +1,6 @@
 import type { Request, Response } from "express";
-import { registerSchema, loginSchema } from "./auth.validation";
-import { registerUser, loginUser, getUserById } from "./auth.service";
+import { registerSchema, loginSchema, updateProfileSchema } from "./auth.validation";
+import { registerUser, loginUser, getUserById, updateUserProfile } from "./auth.service";
 import { signToken } from "../../utils/jwt";
 import { env } from "../../config/env";
 
@@ -67,4 +67,21 @@ export async function me(req: Request, res: Response) {
   const user = await getUserById(req.user!.userId);
   if (!user) return res.status(404).json({ message: "User tidak ditemukan" });
   return res.json({ user });
+}
+
+export async function updateProfile(req: Request, res: Response) {
+  const parsed = updateProfileSchema.safeParse(req.body);
+  if (!parsed.success) {
+    return res.status(400).json({ message: "Validation error", errors: parsed.error.flatten() });
+  }
+  try {
+    const user = await updateUserProfile(req.user!.userId, parsed.data);
+    return res.json({ user });
+  } catch (err) {
+    if (err instanceof Error && err.message === "NOT_FOUND") {
+      return res.status(404).json({ message: "User tidak ditemukan" });
+    }
+    console.error(err);
+    return res.status(500).json({ message: "Terjadi kesalahan server" });
+  }
 }
