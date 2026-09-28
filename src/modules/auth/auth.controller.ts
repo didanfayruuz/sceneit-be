@@ -1,7 +1,11 @@
 import type { Request, Response } from "express";
+
 import { registerSchema, loginSchema, updateProfileSchema } from "./auth.validation";
+
 import { registerUser, loginUser, getUserById, updateUserProfile } from "./auth.service";
+
 import { signToken } from "../../utils/jwt";
+
 import { env } from "../../config/env";
 
 const COOKIE_OPTIONS = {
@@ -16,13 +20,19 @@ export async function register(req: Request, res: Response) {
   if (!parsed.success) {
     return res.status(400).json({ message: "Validation error", errors: parsed.error.flatten() });
   }
-
   try {
     const user = await registerUser(parsed.data);
     const token = signToken({ userId: user.id, role: user.role });
     res.cookie("token", token, COOKIE_OPTIONS);
     return res.status(201).json({
-      user: { id: user.id, name: user.name, email: user.email, role: user.role },
+      user: {
+        id: user.id,
+        name: user.name,
+        email: user.email,
+        avatarUrl: user.avatarUrl,
+        bio: user.bio,
+        role: user.role,
+      },
     });
   } catch (err) {
     if (err instanceof Error && err.message === "EMAIL_ALREADY_USED") {
@@ -38,19 +48,25 @@ export async function login(req: Request, res: Response) {
   if (!parsed.success) {
     return res.status(400).json({ message: "Validation error", errors: parsed.error.flatten() });
   }
-
   try {
     const user = await loginUser(parsed.data);
     const token = signToken({ userId: user.id, role: user.role });
     res.cookie("token", token, COOKIE_OPTIONS);
     return res.json({
-      user: { id: user.id, name: user.name, email: user.email, role: user.role },
+      user: {
+        id: user.id,
+        name: user.name,
+        email: user.email,
+        avatarUrl: user.avatarUrl,
+        bio: user.bio,
+        role: user.role,
+      },
     });
   } catch (err) {
     if (err instanceof Error && err.message === "INVALID_CREDENTIALS") {
       return res.status(401).json({ message: "Email atau password salah" });
     }
-        if (err instanceof Error && err.message === "ACCOUNT_DEACTIVATED") {
+    if (err instanceof Error && err.message === "ACCOUNT_DEACTIVATED") {
       return res.status(403).json({ message: "Akun kamu telah dinonaktifkan" });
     }
     console.error(err);
