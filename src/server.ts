@@ -18,7 +18,7 @@ const app = express();
 
 const allowedOrigins = [
   "http://localhost:5173",
-  "https://GANTI-DENGAN-DOMAIN-VERCEL-KAMU.vercel.app",
+  "https://sceneit-fe.vercel.app",
 ];
 
 app.use(
