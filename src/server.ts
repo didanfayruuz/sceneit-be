@@ -28,6 +28,10 @@ app.use(
       else callback(new Error("Not allowed by CORS"));
     },
     credentials: true,
+    // Explicitly allow Authorization header so FE can send Bearer tokens
+    // from localStorage — required for Safari/iOS ITP compatibility.
+    allowedHeaders: ["Content-Type", "Authorization"],
+    exposedHeaders: ["Authorization"],
   })
 );
 app.use(express.json());
