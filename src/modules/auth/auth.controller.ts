@@ -25,10 +25,6 @@ export async function register(req: Request, res: Response) {
     const token = signToken({ userId: user.id, role: user.role });
     res.cookie("token", token, COOKIE_OPTIONS);
     return res.status(201).json({
-<<<<<<< HEAD
-      user: { id: user.id, name: user.name, email: user.email, role: user.role },
-      token,
-=======
       user: {
         id: user.id,
         name: user.name,
@@ -37,7 +33,7 @@ export async function register(req: Request, res: Response) {
         bio: user.bio,
         role: user.role,
       },
->>>>>>> e2131b08bc68164236dd28d10ef58fd2a5773e90
+      token,
     });
   } catch (err) {
     if (err instanceof Error && err.message === "EMAIL_ALREADY_USED") {
@@ -58,10 +54,6 @@ export async function login(req: Request, res: Response) {
     const token = signToken({ userId: user.id, role: user.role });
     res.cookie("token", token, COOKIE_OPTIONS);
     return res.json({
-<<<<<<< HEAD
-      user: { id: user.id, name: user.name, email: user.email, role: user.role },
-      token,
-=======
       user: {
         id: user.id,
         name: user.name,
@@ -70,7 +62,7 @@ export async function login(req: Request, res: Response) {
         bio: user.bio,
         role: user.role,
       },
->>>>>>> e2131b08bc68164236dd28d10ef58fd2a5773e90
+      token,
     });
   } catch (err) {
     if (err instanceof Error && err.message === "INVALID_CREDENTIALS") {
