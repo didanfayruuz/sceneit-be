@@ -1,11 +1,7 @@
 import type { Request, Response } from "express";
-
 import { registerSchema, loginSchema, updateProfileSchema } from "./auth.validation";
-
 import { registerUser, loginUser, getUserById, updateUserProfile } from "./auth.service";
-
 import { signToken } from "../../utils/jwt";
-
 import { env } from "../../config/env";
 
 const COOKIE_OPTIONS = {
@@ -33,7 +29,6 @@ export async function register(req: Request, res: Response) {
         bio: user.bio,
         role: user.role,
       },
-      token,
     });
   } catch (err) {
     if (err instanceof Error && err.message === "EMAIL_ALREADY_USED") {
@@ -62,7 +57,6 @@ export async function login(req: Request, res: Response) {
         bio: user.bio,
         role: user.role,
       },
-      token,
     });
   } catch (err) {
     if (err instanceof Error && err.message === "INVALID_CREDENTIALS") {
