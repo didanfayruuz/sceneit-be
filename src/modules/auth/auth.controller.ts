@@ -23,6 +23,7 @@ export async function register(req: Request, res: Response) {
     res.cookie("token", token, COOKIE_OPTIONS);
     return res.status(201).json({
       user: { id: user.id, name: user.name, email: user.email, role: user.role },
+      token,
     });
   } catch (err) {
     if (err instanceof Error && err.message === "EMAIL_ALREADY_USED") {
@@ -45,6 +46,7 @@ export async function login(req: Request, res: Response) {
     res.cookie("token", token, COOKIE_OPTIONS);
     return res.json({
       user: { id: user.id, name: user.name, email: user.email, role: user.role },
+      token,
     });
   } catch (err) {
     if (err instanceof Error && err.message === "INVALID_CREDENTIALS") {
