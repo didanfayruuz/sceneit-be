@@ -10,7 +10,12 @@ declare global {
 }
 
 export function requireAuth(req: Request, res: Response, next: NextFunction) {
-  const token = req.cookies?.token;
+  // Accept token from Authorization header first (localStorage flow — Safari/iOS),
+  // then fall back to cookie (traditional browser flow — Chrome/Firefox).
+  const authHeader = req.headers.authorization;
+  const headerToken = authHeader?.startsWith("Bearer ") ? authHeader.slice(7) : null;
+  const token = headerToken ?? req.cookies?.token;
+
   if (!token) {
     return res.status(401).json({ message: "Unauthorized" });
   }
