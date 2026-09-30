@@ -18,7 +18,7 @@ const app = express();
 
 const allowedOrigins = [
   "http://localhost:5173",
-  "https://sceneit-fe.vercel.app",
+  "https://sceneIt.vercel.app/",
 ];
 
 app.use(
